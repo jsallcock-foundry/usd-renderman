@@ -24,7 +24,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 void readUSDVolVolume(
     FnKat::GeolibCookInterface& interface,
     FnKat::GroupAttribute opArgs,
-    const PxrUsdKatanaUsdInPrivateData& privateData
+    const UsdKatanaUsdInPrivateData& privateData
 );
 
 PXR_NAMESPACE_CLOSE_SCOPE

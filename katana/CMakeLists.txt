@@ -1,12 +1,7 @@
 set(PLUGIN_NAME usd_renderman_katana)
 
-if(DEFINED ENV{REZ_KATANAUSDPLUGINS_ROOT})
-set(USD_KATANA_LIBRARY_DIR $ENV{REZ_KATANAUSDPLUGINS_ROOT}/lib)
-set(USD_KATANA_INCLUDE_DIR $ENV{REZ_KATANAUSDPLUGINS_ROOT}/include)
-else()
 set(USD_KATANA_LIBRARY_DIR ${KATANA_HOME}/plugins/Resources/Usd/lib)
 set(USD_KATANA_INCLUDE_DIR ${KATANA_HOME}/plugins/Resources/Usd/include)
-endif()
 
 set(RENDERMAN_INCLUDE_DIR $ENV{RMANTREE}/include)
 set(RENDERMAN_LIBRARY $ENV{RMANTREE}/lib)
@@ -14,42 +9,40 @@ set(RENDERMAN_LIBRARY $ENV{RMANTREE}/lib)
 set(USD_LIBRARY_DIR ${KATANA_HOME}/bin)
 set(USD_INCLUDE_DIR ${KATANA_HOME}/external/FnUSD/include)
 
-if($ENV{REZ_KATANA_MAJOR_VERSION} GREATER 3)
-set(PXR_LIB_PREFIX libfn)
-else()
-set(PXR_LIB_PREFIX libFn)
-endif()
+set(PXR_LIB_PREFIX fn)
 find_package(USD REQUIRED)
 
 set(GEOLIB_API_SOURCE_DIR ${KATANA_API_SOURCE_DIR})
-message(STATUS "KATANA_API_SOURCE_DIR is ${KATANA_API_SOURCE_DIR}")
-message(STATUS "GEOLIB_API_SOURCE_DIR is ${GEOLIB_API_SOURCE_DIR}")
 
 find_package(Renderman REQUIRED)
 
-set(BOOST_LIBRARY_DIR $ENV{BOOST_ROOT}/lib)
-set(BOOST_INCLUDE_DIR $ENV{BOOST_ROOT}/include)
-set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}/lib)
-set(BOOST_INCLUDEDIR $ENV{BOOST_ROOT}/include)
+set(BOOST_LIBRARY_DIR ${KATANA_HOME}/bin)
+set(BOOST_INCLUDE_DIR ${KATANA_HOME}/external/foundryboost/include)
+set(BOOST_LIBRARYDIR ${KATANA_HOME}/bin)
+set(BOOST_INCLUDEDIR ${KATANA_HOME}/external/foundryboost/include)
+
+set(Boost_NAMESPACE foundryboost)
+add_definitions(-DBOOST_ALL_NO_LIB)
+# add_definitions(-DBOOST_ALL_DYN_LINK)
 
 find_package(Boost
         COMPONENTS
         filesystem
         serialization
-        python27
+        python39
         system
         thread
         REQUIRED
         )
 
-set(TBB_ROOT_DIR $ENV{TBBROOT})
-set(TBB_INCLUDE_DIR $ENV{TBB_INCLUDE_DIR})
-set(TBB_LIBRARY $ENV{TBB_LIBRARIES})
+set(TBB_INCLUDE_DIR ${KATANA_HOME}/external/tbb/include)
+set(TBB_LIBRARY ${KATANA_HOME}/bin)
 find_package(TBB REQUIRED COMPONENTS tbb)
 add_definitions(${TBB_DEFINITIONS})
 
+set(PYTHON_LIBRARY ${KATANA_HOME}/bin/python39.lib)
+set(PYTHON_INCLUDE_DIR ${KATANA_HOME}/bin/include/include)
 find_package(PythonLibs REQUIRED)
-
 
 link_directories(
         ${USD_LIBRARY_DIR}
@@ -72,15 +65,15 @@ include_directories(
 file(GLOB SRC *.cpp)
 add_library(${PLUGIN_NAME} MODULE ${SRC})
 
-target_compile_options(${PLUGIN_NAME} PRIVATE -Wno-deprecated -Wno-unused-parameter -Wall -Wextra)
+# target_compile_options(${PLUGIN_NAME} PRIVATE -Wno-deprecated -Wno-unused-parameter -Wall -Wextra)
+target_compile_options(${PLUGIN_NAME} PRIVATE -Wall -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DNOSERVICE -DNOMCX -DNOIME)
+target_compile_definitions(${PLUGIN_NAME} PRIVATE TBB_USE_ASSERT TBB_USE_THREADING_TOOLS) 
 
-if(DEFINED ENV{REZ_KATANAUSDPLUGINS_ROOT})
-if($ENV{REZ_KATANA_MAJOR_VERSION} GREATER 3)
 target_link_libraries(${PLUGIN_NAME}
-    CEL
+    #CEL
     ${PYTHON_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${Boost_PYTHON_LIBRARY}
+    #${Boost_PYTHON_LIBRARY}
     ${TBB_LIBRARIES}
     Katana::FnAttribute
     Katana::FnGeolibOpPlugin
@@ -93,65 +86,6 @@ target_link_libraries(${PLUGIN_NAME}
     fnusdVol
     usdKatana
 )
-else()
-target_link_libraries(${PLUGIN_NAME}
-    CEL
-    ${PYTHON_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${Boost_PYTHON_LIBRARY}
-    ${TBB_LIBRARIES}
-    Katana::FnAttribute
-    Katana::FnGeolibOpPlugin
-    Katana::FnGeolibServices
-    Fntf
-    Fngf
-    Fnsdf
-    Fnusd
-    FnusdGeom
-    FnusdVol
-    usdKatana
-)
-endif()
-else()
-if($ENV{REZ_KATANA_MAJOR_VERSION} GREATER 3)
-target_link_libraries(${PLUGIN_NAME}
-    CEL
-    ${PYTHON_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${Boost_PYTHON_LIBRARY}
-    ${TBB_LIBRARIES}
-    Katana::FnAttribute
-    Katana::FnGeolibOpPlugin
-    Katana::FnGeolibServices
-    fntf
-    fngf
-    fnsdf
-    fnusd
-    fnusdGeom
-    fnusdVol
-    ${USD_KATANA_LIBRARY_DIR}/FnusdKatana.so
-)
-else()
-target_link_libraries(${PLUGIN_NAME}
-    CEL
-    ${PYTHON_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${Boost_PYTHON_LIBRARY}
-    ${TBB_LIBRARIES}
-    Katana::FnAttribute
-    Katana::FnGeolibOpPlugin
-    Katana::FnGeolibServices
-    Fntf
-    Fngf
-    Fnsdf
-    Fnusd
-    FnusdGeom
-    FnusdVol
-    ${USD_KATANA_LIBRARY_DIR}/FnusdKatana.so
-)
-endif()
-endif()
-
 set_target_properties(${PLUGIN_NAME} PROPERTIES PREFIX "")
 set_target_properties(${PLUGIN_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 

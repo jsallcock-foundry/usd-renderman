@@ -29,7 +29,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 
 void readUSDVolVolume(
     FnKat::GeolibCookInterface& interface, FnKat::GroupAttribute opArgs,
-    const PxrUsdKatanaUsdInPrivateData& privateData) {
+    const UsdKatanaUsdInPrivateData& privateData) {
     const auto prim = privateData.GetUsdPrim();
     const auto volume = UsdVolVolume(prim);
     const auto currentTime = privateData.GetUsdInArgs()->GetCurrentTime();
@@ -88,8 +88,8 @@ void readUSDVolVolume(
 
     // Read in the generic prim attributes. This handles things like material
     // binding, visibility, primvars, etc.
-    PxrUsdKatanaAttrMap attrs;
-    PxrUsdKatanaReadPrim(prim, privateData, attrs);
+    UsdKatanaAttrMap attrs;
+    UsdKatanaReadPrim(prim, privateData, attrs);
     attrs.toInterface(interface);
 
     // If any of the VDB field prims are children of the Volume prim (which is
@@ -108,10 +108,11 @@ void readUSDVolVolume(
 
     //std::cout << *vdbPaths.begin() << '\n';
 
-    FnKat::GroupAttribute xform;
-    if (PxrUsdKatanaReadXformable(volume, privateData, xform)) {
-        argsBuilder.set("xform", xform);
-    }
+    // this overload of UsdKatanaReadXformable(...) is not exported in UsdKatana library
+    // FnKat::GroupAttribute xform;
+    // if (UsdKatanaReadXformable(volume, privateData, xform)) {
+    //     argsBuilder.set("xform", xform);
+    // }
 
     interface.execOp("PRManVolumeInput", argsBuilder.build());
 }
